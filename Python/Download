@@ -1,0 +1,72 @@
+#LIBRARIES
+import gzip
+import numpy as np
+import struct
+from PIL import Image
+
+#CONSTANTS
+PICTURES_FOLDER = r"C:\Users\Ramon\Copy\Documents\school\Maturaarbeit\Pictures"
+GZIP = PICTURES_FOLDER + r"\gzip"
+
+BALANCED_TEST = GZIP + r"\emnist-balanced-test-images-idx3-ubyte.gz"
+BALANCED_TRAIN = GZIP + r"\emnist-balanced-train-images-idx3-ubyte.gz"
+BALANCED_TEST_LABELS = GZIP + r"\emnist-balanced-test-labels-idx1-ubyte.gz"
+BALANCED_TRAIN_LABELS = GZIP + r"\emnist-balanced-train-labels-idx1-ubyte.gz"
+
+BALANCED = PICTURES_FOLDER + r"\balanced"
+BALANCED_SAVE_TRAIN = BALANCED + r"\train"
+BALANCED_SAVE_VALIDATE = BALANCED + r"\validate"
+BALANCED_SAVE_TEST= BALANCED + r"\test"
+
+# Reference of the dataset
+# https://www.nist.gov/itl/products-and-services/emnist-dataset 
+
+def run():
+    splitoff_Validationset()
+    saveFiles(read_gzip_Images(BALANCED_TEST),read_gzip_labels(BALANCED_TEST_LABELS),BALANCED_SAVE_TEST) 
+
+
+def read_gzip_Images(path):
+    with gzip.open(path, 'rb') as f:
+        z, dtype, dim = struct.unpack('>HBB', f.read(4)) #read magic number
+
+        shape = struct.unpack('>I', f.read(4)) # read num images 
+        shape = pretuple + struct.unpack('>I', f.read(4)) # read num of rows
+        shape = pretuple + struct.unpack('>I', f.read(4)) # read num of columns
+
+        return np.frombuffer(f.read(), dtype = np.uint8).reshape(shape)
+
+def read_gzip_labels(path):
+    with gzip.open(path, 'rb') as f:
+        f.seek(8)#First 8 bytes are the magic number and number of labels(112800)
+        numArr = np.frombuffer(f.read(), dtype = np.uint8)
+        return numArr
+
+def splitoff_Validationset():
+    pictures = read_gzip_Images(BALANCED_TRAIN)
+    labels = read_gzip_labels(BALANCED_TRAIN_LABELS)
+
+    trainPic = pictures[18800:]
+    trainLbl= labels[18800:]
+    valPic = pictures[:18800]
+    valLbl = labels[:18800]
+
+    saveFiles(valPic,valLbl,BALANCED_SAVE_VALIDATE)
+    saveFiles(trainPic,trainLbl,BALANCED_SAVE_TRAIN)
+ 
+def saveFiles(picArr, lblArr, dir):
+    i = 0
+    for img in picArr:
+        img = Image.fromarray(picArr[i].T)
+        img.save(dir + r"\image" + str(i) + "_" + str(lblArr[i]) + ".png", "PNG")
+        i = i + 1
+
+def switch(rgb):
+    return 255-rgb
+       
+run()
+
+
+
+
+
