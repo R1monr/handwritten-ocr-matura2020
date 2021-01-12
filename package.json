@@ -1,0 +1,17 @@
+{
+  "name": "emnist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node --max-old-space-size=4000 main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow/tfjs-node": "^2.6.0",
+    "get-pixels": "^3.3.2",
+    "jstat": "^1.9.4"
+  }
+}
